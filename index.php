@@ -3,6 +3,7 @@
 
     <script src="js/jquery-3.3.1.min.js"></script>
     <script>
+        var  DISHAMOUNTINT = 0;
         function LoopData() {
             setTimeout(function () {
                 renewData();
@@ -17,7 +18,8 @@
             }).done(function (data) {
                 var obj = jQuery.parseJSON(data);
                 $("#data-field-msg").text(obj.msg);
-                $("#data-field-number").text(obj.number);
+                DISHAMOUNTINT = obj.number
+                $("#data-field-number").text(DISHAMOUNTINT);
             });
         }
 
