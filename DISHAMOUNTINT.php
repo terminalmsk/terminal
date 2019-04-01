@@ -1,50 +1,49 @@
 <?php
-echo '{"number":"---","msg":"Client error response\n[status code] 403\n[reason phrase] Forbidden\n[url] http:\/\/sr1.resto-service.ru:18001\/resto\/j_spring_security_check"}';
-die();
+## Koshka#83151370
+
+use GuzzleHttp\Client;
+
 error_reporting(E_ERROR);
 ini_set('display_errors', 1);
 
-use Guzzle\Plugin\Cookie\CookieJar\FileCookieJar;
-use Guzzle\Plugin\Cookie\CookiePlugin;
 
 try {
     require_once __DIR__ . '/vendor/autoload.php';
 
     $cookie_file_name = __DIR__ . '/test.cookie';
-    $cookiePlugin = new CookiePlugin(new FileCookieJar($cookie_file_name));
+    $cookiePlugin = new \GuzzleHttp\Cookie\CookieJar();
 
 
-    $client = new \Guzzle\Http\Client([
+    $client = new Client([
+//        'base_uri' => 'http://sr1.resto-service.ru:18001',
+//        'base_uri' => 'http://94.130.139.76:18001',
+        'base_uri' => 'http://10.0.0.2:18001',
+        'cookies' => $cookiePlugin,
+        'timeout' => 2.0,
         'headers' => [
             'User-Agent' => 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0',
         ],
     ]);
-    $client->addSubscriber($cookiePlugin);
 
-    $request = $client->createRequest(
+    $response = $client->request(
         'POST',
-        'http://sr1.resto-service.ru:18001/resto/j_spring_security_check',
-        [], [
-        'j_username' => 'web',
-        'j_password' => '45674567',
-    ],
-        []);
+        '/resto/j_spring_security_check',
+        ['form_params'=>[
+            'j_username' => 'web',
+            'j_password' => '123451',
+        ]]);
 
-    $response = $request->send();
+
     $now = new DateTime();
-
     $dateFormat = 'd.m.Y';
     $urlParams = [
         'dateFrom' => $now->format($dateFormat),
-        'dateTo' => $now->add(DateInterval::createFromDateString('day'))->format($dateFormat),
+        'dateTo' => $now->format($dateFormat),
         'presetId' => '8b64c3a3-391c-4dc6-abb7-5bb85627198a',
     ];
 
-    $request = $client->createRequest('GET', 'http://sr1.resto-service.ru:18001/resto/service/reports/report.jspx?' . http_build_query($urlParams));
-
-    $response = $request->send();
-
-    $xmlRaw = $response->getBody(1);
+    $response = $client->request('GET', '/resto/service/reports/report.jspx?' . http_build_query($urlParams));
+    $xmlRaw = $response->getBody();
 
     $p = xml_parser_create();
     xml_parse_into_struct($p, $xmlRaw, $vals, $index);
@@ -56,4 +55,4 @@ try {
     $value = "---";
     $msg = $e->getMessage();
 }
-echo json_encode(["number" => $value, 'msg' => $msg]);
+echo json_encode(["number" => $value, 'msg' => $msg, 'date' => $now->format($dateFormat),'xml'=>$xmlRaw]);
