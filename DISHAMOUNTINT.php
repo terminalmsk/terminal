@@ -10,6 +10,8 @@ ini_set('display_errors', 1);
 try {
     require_once __DIR__ . '/vendor/autoload.php';
 
+    $options = json_decode(file_get_contents(__DIR__ . '/options.json'), true);
+
     $cookie_file_name = __DIR__ . '/test.cookie';
     $cookiePlugin = new \GuzzleHttp\Cookie\CookieJar();
 
@@ -29,8 +31,8 @@ try {
         'POST',
         '/resto/j_spring_security_check',
         ['form_params'=>[
-            'j_username' => 'web',
-            'j_password' => '123451',
+            'j_username' => $options['iikoLogin'],
+            'j_password' => $options['iikoPass'],
         ]]);
 
 
@@ -55,4 +57,4 @@ try {
     $value = "---";
     $msg = $e->getMessage();
 }
-echo json_encode(["number" => $value, 'msg' => $msg, 'date' => $now->format($dateFormat),'xml'=>$xmlRaw]);
+echo json_encode(["number" => $value, 'msg' => $msg, 'date' => $now->format($dateFormat),'xml'=>$xmlRaw,'total'=> $options['total']]);
